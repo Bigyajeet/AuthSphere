@@ -7,12 +7,12 @@ connectDB();
 const app=express();
 
 app.use(express.json());
-app.use('/api/auth', googleRoute);
 
 app.get('/',(req,res)=>{
     res.send("Backend is running")
 });
-app.use('/api/auth');
+app.use('/api/auth', googleRoute);
+
 const port=process.env.PORT || 8000;
 app.listen(port,()=>{
     console.log(`Server is running on port ${port}`);
