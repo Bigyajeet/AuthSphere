@@ -4,6 +4,6 @@ import { getProfile } from '../controllers/auth.controllers.js';
 const router=express.Router();
 
 router.post('/google-login',googleLogin);
-router.get('/profile',getProfile);
+router.get('/profile',protect,getProfile);
 
 export default router;
