@@ -40,5 +40,6 @@ export const googleLogin = async (req, res) => {
     }
 }
 export const getProfile=async(req,res)=>{
+    res.status(200).json(req.user);
 
-}
+};
