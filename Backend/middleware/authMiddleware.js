@@ -14,7 +14,7 @@ export const protect=async(req,res,next)=>{
             });
         }
     const decoded=jwt.verify(token,process.env.JWT_SECRET);
-    const user=await User.findById(decoded.userId);
+    const user=await User.findById(decoded.user);
     if(!user){
         return res.status(404).json({
             success:false,

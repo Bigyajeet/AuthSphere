@@ -2,11 +2,13 @@ import express from "express";
 import dotenv from "dotenv";
 import googleRoute from "./routes/auth.routes.js";
 import connectDB from "./config/db.js";
-dotenv.config();
-connectDB();            
+import cors from "cors";
+dotenv.config();           
 const app=express();
 
 app.use(express.json());
+app.use(cors());
+connectDB(); 
 
 app.get('/',(req,res)=>{
     res.send("Backend is running")

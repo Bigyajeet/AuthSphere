@@ -11,10 +11,10 @@ export const googleLogin = async (req, res) => {
             audience:process.env.GOOGLE_CLIENT_ID
         });
         const payload=ticket.getPayload();
-        const {dsub,email,name}=payload;
+        const {sub,email,name}=payload;
         let user=await User.findOne({email});
         if(!user){
-            name=await User.create({
+            user=await User.create({
                 name,
                 email,
                 googleId:sub,
