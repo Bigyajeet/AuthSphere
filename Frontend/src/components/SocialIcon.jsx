@@ -45,7 +45,11 @@ function SocialIcon() {
         Github Login
     </button>
 
-        <button className="social-btn facebook">
+        <button className="social-btn facebook"
+        onClick={
+        ()=>(window.location.href = "http://localhost:5000/api/auth/facebook")
+     }
+     >
         <FaFacebook/>
         Facebook Login
     </button>
