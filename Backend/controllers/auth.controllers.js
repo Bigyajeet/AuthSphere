@@ -1,6 +1,7 @@
 import { OAuth2Client } from "google-auth-library";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import axios from "axios";
 const client=new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const googleLogin = async (req, res) => {
@@ -107,13 +108,17 @@ export const githubCallback=async(req,res)=>{
             githubId:githubUser.id.toString(),
         })
      }
+     else if (!user.githubId) {
+  user.githubId = githubUser.id.toString();
+  await user.save();
+     }
      const token=jwt.sign({
         user:user._id,
      },
     process.env.JWT_SECRET,{
         expiresIn:'7d',
     });
-    res.redirect(`http://localhost:5173/github-success?token=${token}`);
+     return res.redirect(`http://localhost:5173/github-success?token=${token}`);
          
     }catch(error){
         res.status(500).json({
