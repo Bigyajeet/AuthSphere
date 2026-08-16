@@ -59,6 +59,7 @@ export const githubLogin=async(req,res)=>{
 export const githubCallback=async(req,res)=>{
     try{
         const {code}=req.query;
+
         if(!code){
             res.status(400).json({
                 message:"No code received from github",
@@ -124,6 +125,66 @@ export const githubCallback=async(req,res)=>{
         res.status(500).json({
             message:"Github login Failed",
             
+        });
+    }
+};
+
+export const facebookLogin=async(req,res)=>{
+    const redirectUri='http://localhost:5000/api/auth/facebook/callback';
+    const facebookURL=`https://www.facebook.com/dialog/oauth`+
+    `?client_id=${process.env.FACEBOOK_APP_ID}`
+    +`&redirect_uri=${redirectUri}`
+    + `&scope=email,public_profile`;
+    res.redirect(facebookURL);
+}
+
+export const facebookCallBack=async(req,res)=>{
+    try{
+    const {code}=req.query;
+      const redirectUri='http://localhost:5000/api/auth/facebook/callback';
+      const tokenResponse=await axios.get("https://graph.facebook.com/v23.0/oauth/access_token",
+        {
+            params:{
+                client_id:process.env.FACEBOOK_APP_ID,
+                client_secret:process.env.FACEBOOK_APP_SECRET,
+                redirect_uri:redirectUri,
+                code
+            }
+        },
+    );
+    
+const accessToken=tokenResponse.data.access_token;
+
+    const profileResponse=await axios.get("https://graph.facebook.com/me",{
+        fields:"id,name,email",
+        access_token:accessToken
+    });
+
+    const facebookUser=profileResponse.data;
+    let user=await User.findOne({
+        email:facebookUser.email
+    });
+    if(!user){
+        user=await User.create({
+            name:facebookUser.name,
+            email:facebookUser.email,
+            provider:"facebook",
+            facebookId:facebookUser.id
+        })
+    }else if (!user.facebookId) {
+  user.facebookId = facebookUser.id.toString();
+  await user.save();
+     }
+
+     const token=jwt.sign({
+        user:user._id
+     },
+    process.env.JWT_SECRET,
+{expiresIn:"7d"})
+res.redirect(`http://localhost:5173/facebook-success?token=${token}`)
+    }catch(error){
+        res.status(500).json({
+            message:"Facebook Login Failed",
         });
     }
 }
