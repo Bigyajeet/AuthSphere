@@ -17,6 +17,7 @@ export const googleLogin = async (req, res) => {
             user=await User.create({
                 name,
                 email,
+                provider:"google",
                 googleId:sub,
             });
         }
