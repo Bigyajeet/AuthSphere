@@ -155,9 +155,12 @@ export const facebookCallBack=async(req,res)=>{
     
 const accessToken=tokenResponse.data.access_token;
 
-    const profileResponse=await axios.get("https://graph.facebook.com/me",{
-        fields:"id,name,email",
+    const profileResponse=await axios.get("https://graph.facebook.com/me",
+        {
+        params:{
+            fields:"id,name,email",
         access_token:accessToken
+        },
     });
 
     const facebookUser=profileResponse.data;
