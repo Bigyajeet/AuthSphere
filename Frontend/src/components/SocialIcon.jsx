@@ -37,7 +37,10 @@ function SocialIcon() {
   
    
 
-     <button className="social-btn github">
+     <button className="social-btn github"
+     onClick={
+        ()=>(window.location.href = "http://localhost:5000/api/auth/github")
+     }>
         <FaGithub/>
         Github Login
     </button>
