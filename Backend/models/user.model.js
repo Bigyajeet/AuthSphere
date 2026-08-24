@@ -24,6 +24,9 @@ const userSchema = new mongoose.Schema(
             facebook:{
             type:String,
         },
+            LinkedinId:{
+            type:String,
+        },
       
     },
       {timestamps:true},
