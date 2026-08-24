@@ -206,12 +206,12 @@ export const linkedinCallback=async(req,res)=>{
   try{
       const {code}=req.query;
       if(!code){
-        res.status(400).json({
+        return res.status(400).json({
             message:'No code received from LinkedIn',
         });
       }
       const tokenResponse=await axios.post(
-        "https:www.linkedin.com/oauth/v2/access_token",new URLSearchParams({
+        "https://www.linkedin.com/oauth/v2/accessToken",new URLSearchParams({
             grant_type:"authorization_code",
             code,
             redirect_uri:"http://localhost:5000/api/auth/linkedin/callback",
@@ -233,7 +233,7 @@ export const linkedinCallback=async(req,res)=>{
         }
       )
       const linkedinUser=profileResponse.data;
-     const user=await User.findOne({
+     let user=await User.findOne({
         email:linkedinUser.email,
      });
      const {name,email,sub}=linkedinUser;
@@ -254,7 +254,7 @@ export const linkedinCallback=async(req,res)=>{
     res.redirect(`http://localhost:5173/linkedin-success?token=${token}`);
      
   } catch(error){
-    res.status(500).json({
+    return res.status(500).json({
         messsage:"LinkedIn Login Failed",
     })
   }

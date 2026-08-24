@@ -54,7 +54,9 @@ function SocialIcon() {
         Facebook Login
     </button>
 
-     <button className="social-btn linkedin">
+     <button className="social-btn linkedin" onClick={
+        ()=>(window.location.href = "http://localhost:5000/api/auth/linkedin")
+     }>
         <FaLinkedin/>
         LinkedIn Login
     </button>

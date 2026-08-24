@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import GithubSuccess from "./pages/GithubSuccess";
 import FacebookSuccess from "./pages/FacebookSuccess";
+import LinkedInSuccess from "./pages/LinkedInSuccess";
 
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
       </ProtectedRoute>} />
             <Route path="/github-success" element={<GithubSuccess />} />
              <Route path="/facebook-success" element={<FacebookSuccess />} />
+             <Route path="linkedin-success" element={<LinkedInSuccess/>} />
     </Routes>
     </BrowserRouter>
   );
