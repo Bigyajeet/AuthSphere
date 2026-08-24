@@ -191,3 +191,71 @@ res.redirect(`http://localhost:5173/facebook-success?token=${token}`)
         });
     }
 }
+
+export const linkedinlogin=async(req,res)=>{
+    const linkedinUrl=
+    `https://www.linkedin.com/oauth/v2/authorization`+
+    `?response_type=code` +
+    `&client_id=${process.env.Linkedin_Client_ID}` +
+    `&redirect_uri=http://localhost:5000/api/auth/linkedin/callback`+
+    `&scope=openid profile email`;
+    res.redirect(linkedinUrl);
+};
+
+export const linkedinCallback=async(req,res)=>{
+  try{
+      const {code}=req.query;
+      if(!code){
+        res.status(400).json({
+            message:'No code received from LinkedIn',
+        });
+      }
+      const tokenResponse=await axios.post(
+        "https:www.linkedin.com/oauth/v2/access_token",new URLSearchParams({
+            grant_type:"authorization_code",
+            code,
+            redirect_uri:"http://localhost:5000/api/auth/linkedin/callback",
+            client_id:process.env.Linkedin_Client_ID,
+            client_secret:process.env.Linkedin_Client_Secret
+
+        }),{
+            headers:{
+                "Content-Type":"application/x-www-form-urlencoded",
+            },
+        },
+      );
+      const accessToken=tokenResponse.data.access_token;
+      const profileResponse=await axios.get(
+        "https://api.linkedin.com/v2/userinfo",{
+            headers:{
+                Authorization:`Bearer ${accessToken}`,
+            }
+        }
+      )
+      const linkedinUser=profileResponse.data;
+     const user=await User.findOne({
+        email:linkedinUser.email,
+     });
+     const {name,email,sub}=linkedinUser;
+     if(!user){
+        user=await User.create({
+            name,
+            email,
+            provider:"LinkedIn",
+            LinkedinId:sub,
+        });
+    }
+        const token=jwt.sign({
+            user:user._id
+        },
+    process.env.JWT_SECRET,{
+        expiresIn:"7d",
+    });
+    res.redirect(`http://localhost:5173/linkedin-success?token=${token}`);
+     
+  } catch(error){
+    res.status(500).json({
+        messsage:"LinkedIn Login Failed",
+    })
+  }
+};

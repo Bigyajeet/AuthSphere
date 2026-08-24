@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
         },
         provider:{
             type:String,
-            enum:["google", "github","facebook"]
+            enum:["google", "github","facebook","LinkedIn"]
         },
         googleId:{
             type:String,

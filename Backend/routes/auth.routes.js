@@ -1,5 +1,5 @@
 import express from 'express';
-import {  googleLogin } from '../controllers/auth.controllers.js';
+import {  googleLogin, linkedinCallback, linkedinlogin } from '../controllers/auth.controllers.js';
 import { getProfile,githubLogin,githubCallback,facebookLogin,facebookCallBack} from '../controllers/auth.controllers.js';
 import { protect } from '../middleware/authMiddleware.js';
 const router=express.Router();
@@ -10,4 +10,6 @@ router.get('/github',githubLogin);
 router.get('/github/callback',githubCallback);
 router.get('/facebook',facebookLogin);
 router.get('/facebook/callback',facebookCallBack);
+router.get('/linkedin',linkedinlogin);
+router.get('/linkedin/callback',linkedinCallback)
 export default router;
