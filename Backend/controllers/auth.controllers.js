@@ -2,6 +2,7 @@ import { OAuth2Client } from "google-auth-library";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import axios from "axios";
+import bcrypt from "bcryptjs";
 const client=new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const googleLogin = async (req, res) => {
@@ -259,3 +260,41 @@ export const linkedinCallback=async(req,res)=>{
     })
   }
 };
+
+
+export const registerUser=async(req,res)=>{
+    try{
+        const {name,email,password}=req.body;
+        const existingUser=await User.findOne({
+            email,
+        });
+        if(existingUser){
+            return res.status(400).json({
+                message:"User already exists"
+            });
+        }
+         const hashedPassword=await bcrypt.hash(password,10);
+         const user=await User.create({
+            name,
+            email,
+            password:hashedPassword,
+            provider:"local",
+         });
+         const token=jwt.sign({
+            user:user._id
+         },
+        process.env.JWT_SECRET,
+    {expiresIn:"7d",
+
+    });
+
+    res.status(201).json({
+        token,
+        user
+    })
+    }catch(error){
+      return res.status(500).json({
+        message:"Registration Failed",
+      });
+    }
+}
