@@ -11,6 +11,9 @@ const userSchema = new mongoose.Schema(
             required:true,
             unique:true
         },
+        password:{
+            type:String,
+        },
         provider:{
             type:String,
             enum:["google", "github","facebook","LinkedIn","local"]
