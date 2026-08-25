@@ -1,9 +1,9 @@
 import React from 'react'
 import SocialIcon from '../components/SocialIcon';
 import LoginForm from '../components/LoginForm';
-import RegisterForm from '../components/RegisterForm';
+import RegisterOTP from '../components/RegisterOTP';
 import '../index.css';
-
+import RegisterForm from '../components/RegisterForm';
 function AuthPage() {
   return (
    <div className="container">
@@ -11,9 +11,11 @@ function AuthPage() {
         <h1>Authentication</h1>
         <SocialIcon/>
         <hr/>
+        <RegisterForm/>
+        <hr/>
         <LoginForm/>
         <hr />
-        <RegisterForm/>
+        <RegisterOTP/>
 
         
     </div>
