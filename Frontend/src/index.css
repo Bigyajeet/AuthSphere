@@ -60,6 +60,7 @@ body::after {
   padding: 40px 20px;
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 /* 3D Glassmorphism Main Card Container */
@@ -80,6 +81,7 @@ body::after {
   transform-style: preserve-3d;
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
   animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-sizing: border-box;
 }
 
 .card:hover {
@@ -88,6 +90,10 @@ body::after {
     0 35px 60px -15px rgba(0, 0, 0, 0.8),
     0 0 0 1px rgba(255, 255, 255, 0.2) inset,
     0 25px 50px rgba(99, 102, 241, 0.25);
+}
+
+.wide-card {
+  max-width: 720px;
 }
 
 @keyframes cardEntrance {
@@ -112,12 +118,76 @@ body::after {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Tab Switcher Navigation */
+.auth-tab-group {
+  display: flex;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 24px;
+  gap: 6px;
+  transform: translateZ(15px);
+}
+
+.auth-tab {
+  flex: 1;
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: none;
+  transform: none;
+  transition: all 0.2s ease;
+}
+
+.auth-tab:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.04);
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-tab.active {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+
+/* Auth Divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 22px 0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transform: translateZ(10px);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.auth-divider span {
+  padding: 0 12px;
+}
+
 /* Social Login Buttons Wrapper */
 .social-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   transform: translateZ(20px);
 }
 
@@ -219,6 +289,84 @@ body::after {
   background: linear-gradient(to bottom, #2587e5, #074786) !important;
 }
 
+/* Profession Selection Multi-Card Grid */
+.profession-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 12px 0 24px;
+}
+
+@media (max-width: 620px) {
+  .profession-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profession-item {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 20px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.profession-item:hover {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(129, 140, 248, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.5);
+}
+
+.profession-item.active {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #818cf8;
+  box-shadow: 
+    0 0 0 2px rgba(129, 140, 248, 0.5), 
+    0 10px 25px -5px rgba(99, 102, 241, 0.35);
+  transform: translateY(-3px);
+}
+
+.profession-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.profession-icon {
+  font-size: 24px;
+}
+
+.profession-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.profession-item h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.profession-item p {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
 /* Form Inputs with Inset 3D Depth */
 input {
   width: 100%;
@@ -266,6 +414,7 @@ button {
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(15px);
+  box-sizing: border-box;
 }
 
 button:hover {
@@ -279,6 +428,12 @@ button:hover {
 button:active {
   transform: translateY(1px) scale(0.99) translateZ(15px);
   box-shadow: 0 5px 10px -3px rgba(79, 70, 229, 0.4);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Interactive Links */
@@ -309,6 +464,7 @@ button:active {
   background-attachment: fixed;
   padding: 20px;
   perspective: 1200px;
+  box-sizing: border-box;
 }
 
 .dashboard-card {
@@ -327,6 +483,7 @@ button:active {
     0 20px 40px rgba(0, 0, 0, 0.4);
   transform-style: preserve-3d;
   animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-sizing: border-box;
 }
 
 .dashboard-title {
@@ -363,6 +520,7 @@ button:active {
   transition: all 0.25s ease;
   width: 100%;
   box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.5);
+  box-sizing: border-box;
 }
 
 .dashboard-btn:hover {
@@ -371,7 +529,7 @@ button:active {
   box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.6);
 }
 
-/* Auth / Reset Password Extensions */
+/* Auth / Reset / Forgot Password Extensions */
 .auth-subtitle {
   text-align: center;
   color: #94a3b8;
