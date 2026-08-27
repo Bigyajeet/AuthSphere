@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'; 
 import User from '../models/user.model.js';
-import { sendEmail } from '../utils/sendEmail.js';
+import { sendEmail } from '../utils/SendEmail.js';
 
 export const sentOtp = async (req, res) => {
   try {
