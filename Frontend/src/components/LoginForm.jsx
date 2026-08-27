@@ -34,7 +34,8 @@ catch(error){
       onChange={(e)=>setPassword(e.target.value)}/>
       <button
       onClick={handleLogin}>Login</button>
-      <p className="forgot">Forgot Password</p>
+      <p className="forgot"
+      onClick={()=>(window.location.href="forgot-password")}>Forgot Password</p>
     </div>
   );
 }
