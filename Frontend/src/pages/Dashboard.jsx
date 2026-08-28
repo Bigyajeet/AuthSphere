@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import API from '../services/api';
 
 function Dashboard() {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
     const fetchUser = async () => {
+        const token = localStorage.getItem("token");
+        
+        // If no token exists, immediately redirect to login
+        if (!token) {
+            navigate("/");
+            return;
+        }
+
         try {
-            const token = localStorage.getItem("token");
-            const res = await axios.get("http://localhost:5000/api/auth/profile", {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            const res = await API.get("/api/auth/profile");
             setUser(res.data);
         } catch (error) {
-            console.log(error);
+            console.error("Dashboard profile fetch error:", error);
+            localStorage.removeItem("token");
             navigate("/");
         }
     };
@@ -33,11 +36,10 @@ function Dashboard() {
 
     return (
         <div className="dashboard-container">
-            {/* Added dashboard-card wrapper to fix layout stretching */}
             <div className="dashboard-card">
                 <h1 className="dashboard-title">Dashboard</h1>
                 {user ? (
-                    <> 
+                    <>
                         <h2 className="dashboard-name">
                             {user.name}
                         </h2>
@@ -49,9 +51,7 @@ function Dashboard() {
                         </button>
                     </>
                 ) : (
-                    <>  
-                        <p style={{ color: '#94a3b8' }}>Loading......</p>  
-                    </>
+                    <p style={{ color: '#94a3b8' }}>Loading...</p>
                 )}
             </div>
         </div>

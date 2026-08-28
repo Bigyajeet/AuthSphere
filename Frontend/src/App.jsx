@@ -20,7 +20,7 @@ function App() {
       </ProtectedRoute>} />
             <Route path="/github-success" element={<GithubSuccess />} />
              <Route path="/facebook-success" element={<FacebookSuccess />} />
-             <Route path="linkedin-success" element={<LinkedInSuccess/>} />
+             <Route path="/linkedin-success" element={<LinkedInSuccess/>} />
              <Route path="/forgot-password" element={<ForgotPassword/>} />
              <Route path="/reset-password/:token" element={<ResetPassword/>} />
     </Routes>
