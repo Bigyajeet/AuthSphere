@@ -40,16 +40,23 @@ export const sentOtp = async (req, res) => {
         message: `OTP sent successfully to ${user.email}`,
       });
     } catch (emailError) {
+      console.error("Nodemailer Send Error Details:", {
+        message: emailError.message,
+        code: emailError.code,
+        response: emailError.response,
+      });
+
       user.otp = undefined;
       user.otpExpire = undefined;
       await user.save({ validateBeforeSave: false });
 
       return res.status(500).json({
         success: false,
-        message: 'Could not send OTP email. Please try again.',
+        message: emailError.message || 'Could not send OTP email. Please try again.',
       });
     }
   } catch (error) {
+    console.error("Controller Error in sentOtp:", error);
     return res.status(500).json({
       success: false,
       message: error.message || 'Server error',
@@ -86,7 +93,6 @@ export const verifyOtp = async (req, res) => {
     user.isVerified = true;
     await user.save({ validateBeforeSave: false });
 
-    
     const token = jwt.sign(
       { user: user._id },
       process.env.JWT_SECRET,
@@ -104,6 +110,7 @@ export const verifyOtp = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Controller Error in verifyOtp:", error);
     return res.status(500).json({
       success: false,
       message: error.message || 'OTP Verification Failed',
