@@ -4,372 +4,389 @@ import jwt from "jsonwebtoken";
 import axios from "axios";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { sendEmail } from "../utils/SendEmail.js";
-const client=new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+import { SendEmail } from "../utils/SendEmail.js";
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const CLIENT_URL = process.env.CLIENT_URL || "https://authsph.netlify.app";
+const SERVER_URL = process.env.SERVER_URL || "https://authsphere-bobd.onrender.com";
 
 export const googleLogin = async (req, res) => {
-    try{
-        const {token}=req.body;
-        const ticket=await client.verifyIdToken({
-            idToken:token,
-            audience:process.env.GOOGLE_CLIENT_ID
-        });
-        const payload=ticket.getPayload();
-        const {sub,email,name}=payload;
-        let user=await User.findOne({email});
-        if(!user){
-            user=await User.create({
-                name,
-                email,
-                provider:"google",
-                googleId:sub,
-            });
-        }
-        const jwtToken=jwt.sign({user:user._id},process.env.JWT_SECRET,{
-            expiresIn:"7d"
-
-        });
-        return res.status(200).json({
-            success:true,
-            user,
-            token:jwtToken,
-            message:"Google Token verified successfully"
-           
-        });
-
-    }catch(error){
-      return  res.status(500).json({
-        message:" Google login Failed",
-        error:error.message
+  try {
+    const { token } = req.body;
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
-    }
-}
-export const getProfile=async(req,res)=>{
-    res.status(200).json(req.user);
-
-};
-
-export const githubLogin=async(req,res)=>{
-    const githubURL=
-    `https://github.com/login/oauth/authorize`+
-    `?client_id=${process.env.GITHUB_CLIENT_ID}`+
-    `&scope=user:email`;
-    res.redirect(githubURL);
-};
-
-// fallback route for github login
-
-export const githubCallback=async(req,res)=>{
-    try{
-        const {code}=req.query;
-
-        if(!code){
-            res.status(400).json({
-                message:"No code received from github",
-            });
-        }
-        const tokenResponse=await axios.post(
-            "https://github.com/login/oauth/access_token",
-            {
-                client_id:process.env.GITHUB_CLIENT_ID,
-                client_secret:process.env.GITHUB_CLIENT_SECRET,
-                code,
-
-            },{
-                headers:{
-                    Accept:"application/json",
-                },
-            },
-        );
-      const accessToken=tokenResponse.data.access_token;  
-      //user info fetch from github
-      const userResponse=await axios.get("https://api.github.com/user",{
-        headers:{
-            Authorization:`Bearer ${accessToken}`,
-        },
+    const payload = ticket.getPayload();
+    const { sub, email, name } = payload;
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({
+        name,
+        email,
+        provider: "google",
+        googleId: sub,
       });
-       const githubUser=userResponse.data;
-      //store 
-       const emailResponse=await axios.get("https://api.github.com/user/emails",{
-        headers:{
-            Authorization:`Bearer ${accessToken}`,
-        },
-      });
-
-      const primaryEmail=emailResponse.data.find((email)=>email.primary===true);
-      const email=primaryEmail?.email;
-      if(!email){
-        res.status(400).json({
-            message:"No email found for this github user",
-        })
-      }
-     const user=await User.findOne({email});
-     if(!user){
-        user=await User.create({
-            name:githubUser.name || githubUser.login,
-            email,
-            provider:"github",
-            githubId:githubUser.id.toString(),
-        })
-     }
-     else if (!user.githubId) {
-  user.githubId = githubUser.id.toString();
-  await user.save();
-     }
-     const token=jwt.sign({
-        user:user._id,
-     },
-    process.env.JWT_SECRET,{
-        expiresIn:'7d',
-    });
-     return res.redirect(`http://localhost:5173/github-success?token=${token}`);
-         
-    }catch(error){
-        res.status(500).json({
-            message:"Github login Failed",
-            
-        });
     }
-};
-
-export const facebookLogin=async(req,res)=>{
-    const redirectUri='http://localhost:5000/api/auth/facebook/callback';
-    const facebookURL=`https://www.facebook.com/dialog/oauth`+
-    `?client_id=${process.env.FACEBOOK_APP_ID}`
-    +`&redirect_uri=${redirectUri}`
-    + `&scope=email,public_profile`;
-    res.redirect(facebookURL);
-}
-
-export const facebookCallBack=async(req,res)=>{
-    try{
-    const {code}=req.query;
-      const redirectUri='http://localhost:5000/api/auth/facebook/callback';
-      const tokenResponse=await axios.get("https://graph.facebook.com/v23.0/oauth/access_token",
-        {
-            params:{
-                client_id:process.env.FACEBOOK_APP_ID,
-                client_secret:process.env.FACEBOOK_APP_SECRET,
-                redirect_uri:redirectUri,
-                code
-            }
-        },
-    );
-    
-const accessToken=tokenResponse.data.access_token;
-
-    const profileResponse=await axios.get("https://graph.facebook.com/me",
-        {
-        params:{
-            fields:"id,name,email",
-        access_token:accessToken
-        },
+    const jwtToken = jwt.sign({ user: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
-
-    const facebookUser=profileResponse.data;
-    let user=await User.findOne({
-        email:facebookUser.email
+    return res.status(200).json({
+      success: true,
+      user,
+      token: jwtToken,
+      message: "Google Token verified successfully",
     });
-    if(!user){
-        user=await User.create({
-            name:facebookUser.name,
-            email:facebookUser.email,
-            provider:"facebook",
-            facebookId:facebookUser.id
-        })
-    }else if (!user.facebookId) {
-  user.facebookId = facebookUser.id.toString();
-  await user.save();
-     }
-
-     const token=jwt.sign({
-        user:user._id
-     },
-    process.env.JWT_SECRET,
-{expiresIn:"7d"})
-res.redirect(`http://localhost:5173/facebook-success?token=${token}`)
-    }catch(error){
-        res.status(500).json({
-            message:"Facebook Login Failed",
-        });
-    }
-}
-
-export const linkedinlogin=async(req,res)=>{
-    const linkedinUrl=
-    `https://www.linkedin.com/oauth/v2/authorization`+
-    `?response_type=code` +
-    `&client_id=${process.env.Linkedin_Client_ID}` +
-    `&redirect_uri=http://localhost:5000/api/auth/linkedin/callback`+
-    `&scope=openid profile email`;
-    res.redirect(linkedinUrl);
-};
-
-export const linkedinCallback=async(req,res)=>{
-  try{
-      const {code}=req.query;
-      if(!code){
-        return res.status(400).json({
-            message:'No code received from LinkedIn',
-        });
-      }
-      const tokenResponse=await axios.post(
-        "https://www.linkedin.com/oauth/v2/accessToken",new URLSearchParams({
-            grant_type:"authorization_code",
-            code,
-            redirect_uri:"http://localhost:5000/api/auth/linkedin/callback",
-            client_id:process.env.Linkedin_Client_ID,
-            client_secret:process.env.Linkedin_Client_Secret
-
-        }),{
-            headers:{
-                "Content-Type":"application/x-www-form-urlencoded",
-            },
-        },
-      );
-      const accessToken=tokenResponse.data.access_token;
-      const profileResponse=await axios.get(
-        "https://api.linkedin.com/v2/userinfo",{
-            headers:{
-                Authorization:`Bearer ${accessToken}`,
-            }
-        }
-      )
-      const linkedinUser=profileResponse.data;
-     let user=await User.findOne({
-        email:linkedinUser.email,
-     });
-     const {name,email,sub}=linkedinUser;
-     if(!user){
-        user=await User.create({
-            name,
-            email,
-            provider:"LinkedIn",
-            LinkedinId:sub,
-        });
-    }
-        const token=jwt.sign({
-            user:user._id
-        },
-    process.env.JWT_SECRET,{
-        expiresIn:"7d",
-    });
-    res.redirect(`http://localhost:5173/linkedin-success?token=${token}`);
-     
-  } catch(error){
+  } catch (error) {
     return res.status(500).json({
-        messsage:"LinkedIn Login Failed",
-    })
+      message: "Google login Failed",
+      error: error.message,
+    });
   }
 };
 
-
-export const registerUser=async(req,res)=>{
-    try{
-        const {name,email,password}=req.body;
-        const existingUser=await User.findOne({
-            email,
-        });
-        if(existingUser){
-            return res.status(400).json({
-                message:"User already exists"
-            });
-        }
-         const hashedPassword=await bcrypt.hash(password,10);
-         const user=await User.create({
-            name,
-            email,
-            password:hashedPassword,
-            provider:"local",
-         });
-         const token=jwt.sign({
-            user:user._id
-         },
-        process.env.JWT_SECRET,
-    {expiresIn:"7d",
-
-    });
-
-    res.status(201).json({
-        token,
-        user
-    })
-    }catch(error){
-      return res.status(500).json({
-        message:"Registration Failed",
-      });
-    }
+export const getProfile = async (req, res) => {
+  return res.status(200).json(req.user);
 };
 
-export const loginUser=async(req,res)=>{
-    try{
-     const {email,password}=req.body;
-     const user=await User.findOne({email});
-    if(!user){
-        return res.status(400).json({
-            message:"Invalid Credentials",
-        });
-    } 
-    const isMatch=await bcrypt.compare(password,user.password);
-    if(!isMatch){
-        return res.status(400).json({
-            message:"Invalid Credentials",
-        })
-    }
-          const token=jwt.sign({
-            user:user._id
-         },
-        process.env.JWT_SECRET,
-    {expiresIn:"7d",
+export const githubLogin = async (req, res) => {
+  const githubURL =
+    `https://github.com/login/oauth/authorize` +
+    `?client_id=${process.env.GITHUB_CLIENT_ID}` +
+    `&scope=user:email`;
+  return res.redirect(githubURL);
+};
 
-    });
-    res.status(200).json({
-        token,
-        user
-    }) 
-}catch(error){
-        return res.status(500).json({
-            message:"Login Failed",
-        });
+export const githubCallback = async (req, res) => {
+  try {
+    const { code } = req.query;
+
+    if (!code) {
+      return res.status(400).json({
+        message: "No code received from github",
+      });
     }
-}
+
+    const tokenResponse = await axios.post(
+      "https://github.com/login/oauth/access_token",
+      {
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        code,
+      },
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    const accessToken = tokenResponse.data.access_token;
+    const userResponse = await axios.get("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const githubUser = userResponse.data;
+
+    const emailResponse = await axios.get("https://api.github.com/user/emails", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const primaryEmail = emailResponse.data.find((email) => email.primary === true);
+    const email = primaryEmail?.email;
+    if (!email) {
+      return res.status(400).json({
+        message: "No email found for this github user",
+      });
+    }
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({
+        name: githubUser.name || githubUser.login,
+        email,
+        provider: "github",
+        githubId: githubUser.id.toString(),
+      });
+    } else if (!user.githubId) {
+      user.githubId = githubUser.id.toString();
+      await user.save();
+    }
+
+    const token = jwt.sign(
+      {
+        user: user._id,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    return res.redirect(`${CLIENT_URL}/github-success?token=${token}`);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Github login Failed",
+    });
+  }
+};
+
+export const facebookLogin = async (req, res) => {
+  const redirectUri = `${SERVER_URL}/api/auth/facebook/callback`;
+  const facebookURL =
+    `https://www.facebook.com/dialog/oauth` +
+    `?client_id=${process.env.FACEBOOK_APP_ID}` +
+    `&redirect_uri=${redirectUri}` +
+    `&scope=email,public_profile`;
+  return res.redirect(facebookURL);
+};
+
+export const facebookCallBack = async (req, res) => {
+  try {
+    const { code } = req.query;
+    const redirectUri = `${SERVER_URL}/api/auth/facebook/callback`;
+    const tokenResponse = await axios.get(
+      "https://graph.facebook.com/v23.0/oauth/access_token",
+      {
+        params: {
+          client_id: process.env.FACEBOOK_APP_ID,
+          client_secret: process.env.FACEBOOK_APP_SECRET,
+          redirect_uri: redirectUri,
+          code,
+        },
+      }
+    );
+
+    const accessToken = tokenResponse.data.access_token;
+    const profileResponse = await axios.get("https://graph.facebook.com/me", {
+      params: {
+        fields: "id,name,email",
+        access_token: accessToken,
+      },
+    });
+
+    const facebookUser = profileResponse.data;
+    let user = await User.findOne({
+      email: facebookUser.email,
+    });
+
+    if (!user) {
+      user = await User.create({
+        name: facebookUser.name,
+        email: facebookUser.email,
+        provider: "facebook",
+        facebookId: facebookUser.id,
+      });
+    } else if (!user.facebookId) {
+      user.facebookId = facebookUser.id.toString();
+      await user.save();
+    }
+
+    const token = jwt.sign(
+      {
+        user: user._id,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    return res.redirect(`${CLIENT_URL}/facebook-success?token=${token}`);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Facebook Login Failed",
+    });
+  }
+};
+
+export const linkedinlogin = async (req, res) => {
+  const redirectUri = `${SERVER_URL}/api/auth/linkedin/callback`;
+  const linkedinUrl =
+    `https://www.linkedin.com/oauth/v2/authorization` +
+    `?response_type=code` +
+    `&client_id=${process.env.Linkedin_Client_ID}` +
+    `&redirect_uri=${redirectUri}` +
+    `&scope=openid profile email`;
+  return res.redirect(linkedinUrl);
+};
+
+export const linkedinCallback = async (req, res) => {
+  try {
+    const { code } = req.query;
+    if (!code) {
+      return res.status(400).json({
+        message: "No code received from LinkedIn",
+      });
+    }
+    const redirectUri = `${SERVER_URL}/api/auth/linkedin/callback`;
+    const tokenResponse = await axios.post(
+      "https://www.linkedin.com/oauth/v2/accessToken",
+      new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: redirectUri,
+        client_id: process.env.Linkedin_Client_ID,
+        client_secret: process.env.Linkedin_Client_Secret,
+      }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    const accessToken = tokenResponse.data.access_token;
+    const profileResponse = await axios.get(
+      "https://api.linkedin.com/v2/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const linkedinUser = profileResponse.data;
+    let user = await User.findOne({
+      email: linkedinUser.email,
+    });
+    const { name, email, sub } = linkedinUser;
+
+    if (!user) {
+      user = await User.create({
+        name,
+        email,
+        provider: "LinkedIn",
+        LinkedinId: sub,
+      });
+    } else if (!user.LinkedinId) {
+      user.LinkedinId = sub;
+      await user.save();
+    }
+
+    const token = jwt.sign(
+      {
+        user: user._id,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    return res.redirect(`${CLIENT_URL}/linkedin-success?token=${token}`);
+  } catch (error) {
+    return res.status(500).json({
+      message: "LinkedIn Login Failed",
+    });
+  }
+};
+
+export const registerUser = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    const existingUser = await User.findOne({
+      email,
+    });
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      provider: "local",
+    });
+
+    const token = jwt.sign(
+      {
+        user: user._id,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    return res.status(201).json({
+      token,
+      user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Registration Failed",
+    });
+  }
+};
+
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid Credentials",
+      });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid Credentials",
+      });
+    }
+    const token = jwt.sign(
+      {
+        user: user._id,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+    return res.status(200).json({
+      token,
+      user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Login Failed",
+    });
+  }
+};
 
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json({ success: false, message: 'Please provide an email' });
+      return res.status(400).json({ success: false, message: "Please provide an email" });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
 
-    
-    const rawResetToken = crypto.randomBytes(32).toString('hex');
+    const rawResetToken = crypto.randomBytes(32).toString("hex");
     user.resetPasswordToken = crypto
-      .createHash('sha256')
+      .createHash("sha256")
       .update(rawResetToken)
-      .digest('hex');
+      .digest("hex");
     user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
 
     await user.save({ validateBeforeSave: false });
 
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-    const resetUrl = `${clientUrl}/reset-password/${rawResetToken}`;
-
+    const resetUrl = `${CLIENT_URL}/reset-password/${rawResetToken}`;
     const message = `You requested a password reset. Click the link below to reset your password:\n\n${resetUrl}\n\nThis link expires in 15 minutes.\nIf you did not request this, please ignore this email.`;
 
     try {
-      //  Send email
-      await sendEmail({
+      await SendEmail({
         email: user.email,
-        subject: 'Password Reset Request',
+        subject: "Password Reset Request",
         message,
       });
 
@@ -378,20 +395,19 @@ export const forgotPassword = async (req, res) => {
         message: `Reset token sent to ${user.email}`,
       });
     } catch (emailError) {
-    
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
       await user.save({ validateBeforeSave: false });
 
       return res.status(500).json({
         success: false,
-        message: 'Email could not be sent. Please try again later.',
+        message: "Email could not be sent. Please try again later.",
       });
     }
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message || 'Server error',
+      message: error.message || "Server error",
     });
   }
 };
@@ -404,14 +420,14 @@ export const resetPassword = async (req, res) => {
     if (!password) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide a new password',
+        message: "Please provide a new password",
       });
     }
 
     const resetPasswordToken = crypto
-      .createHash('sha256')
+      .createHash("sha256")
       .update(token)
-      .digest('hex');
+      .digest("hex");
 
     const user = await User.findOne({
       resetPasswordToken,
@@ -421,13 +437,12 @@ export const resetPassword = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired reset token',
+        message: "Invalid or expired reset token",
       });
     }
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
-
 
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
@@ -436,12 +451,12 @@ export const resetPassword = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Password reset successful. You can now log in.',
+      message: "Password reset successful. You can now log in.",
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message || 'Server error',
+      message: error.message || "Server error",
     });
   }
 };

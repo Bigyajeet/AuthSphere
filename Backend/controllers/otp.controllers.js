@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'; 
 import User from '../models/user.model.js';
-import { sendEmail } from '../utils/SendEmail.js';
+import { SendEmail } from '../utils/SendEmail.js';
 
 export const sentOtp = async (req, res) => {
   try {
@@ -29,7 +29,7 @@ export const sentOtp = async (req, res) => {
     const message = `Your verification OTP is: ${otp}\n\nThis OTP is valid for 10 minutes. If you did not request this, please ignore this email.`;
 
     try {
-      await sendEmail({
+      await SendEmail({
         email: user.email,
         subject: 'Email Verification OTP',
         message,
@@ -67,6 +67,7 @@ export const verifyOtp = async (req, res) => {
         message: 'Please provide both email and OTP',
       });
     }
+
     const user = await User.findOne({
       email,
       otp,
@@ -84,8 +85,10 @@ export const verifyOtp = async (req, res) => {
     user.otpExpire = undefined;
     user.isVerified = true;
     await user.save({ validateBeforeSave: false });
+
+    
     const token = jwt.sign(
-      { id: user._id },
+      { user: user._id },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
