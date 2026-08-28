@@ -1,67 +1,66 @@
-import { GoogleLogin } from '@react-oauth/google';
 import React from 'react';
-import axios from 'axios';
-import { FaGoogle, FaGithub, FaFacebook, FaLinkedin } from 'react-icons/fa';
+import { GoogleLogin } from '@react-oauth/google';
+import { FaGithub, FaFacebook, FaLinkedin } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-
+import API, { API_BASE_URL } from '../services/api';
 
 function SocialIcon() {
-   const navigate=useNavigate();
-    const handleGoogleSuccess=async(credentialResponse)=>{
-         
-        try{
-            const res=await axios.post("http://localhost:5000/api/auth/google-login",{
-                token:credentialResponse.credential
-            })
-            console.log(res);
-            
-            // console.log(credentialResponse);
-            localStorage.setItem("token",res.data.token);
-            alert("login successfully");
-            navigate("/profile");
-        }catch(error){
-            console.log(error);
-            alert("login failed");
-        }
+  const navigate = useNavigate();
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await API.post("/api/auth/google-login", {
+        token: credentialResponse.credential,
+      });
+
+      localStorage.setItem("token", res.data.token);
+      alert("Login successful!");
+      navigate("/profile");
+    } catch (error) {
+      console.error("Google login error:", error);
+      alert(error.response?.data?.message || "Google login failed");
     }
+  };
+
   return (
-   <div className="social-container">
-   <div className="social-btn google">
-    <div>
-        <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={()=>alert("Login Failed")}
-        />
-    </div>
-   </div>
-  
-   
+    <div className="social-container">
+      <div className="social-btn google">
+        <div>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => alert("Google Login Failed")}
+          />
+        </div>
+      </div>
 
-     <button className="social-btn github"
-     onClick={
-        ()=>(window.location.href = "http://localhost:5000/api/auth/github")
-     }>
-        <FaGithub/>
+      <button
+        type="button"
+        className="social-btn github"
+        onClick={() => (window.location.href = `${API_BASE_URL}/api/auth/github`)}
+      >
+        <FaGithub />
         Github Login
-    </button>
+      </button>
 
-        <button className="social-btn facebook"
-        onClick={
-        ()=>(window.location.href = "http://localhost:5000/api/auth/facebook")
-     }
-     >
-        <FaFacebook/>
+      <button
+        type="button"
+        className="social-btn facebook"
+        onClick={() => (window.location.href = `${API_BASE_URL}/api/auth/facebook`)}
+      >
+        <FaFacebook />
         Facebook Login
-    </button>
+      </button>
 
-     <button className="social-btn linkedin" onClick={
-        ()=>(window.location.href = "http://localhost:5000/api/auth/linkedin")
-     }>
-        <FaLinkedin/>
+      <button
+        type="button"
+        className="social-btn linkedin"
+        onClick={() => (window.location.href = `${API_BASE_URL}/api/auth/linkedin`)}
+      >
+        <FaLinkedin />
         LinkedIn Login
-    </button>
-   </div>
-  )
+      </button>
+    </div>
+  );
 }
 
-export default SocialIcon
+export default SocialIcon;

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../services/api";
 
 function LoginOTP() {
   const [email, setEmail] = useState("");
@@ -17,7 +17,7 @@ function LoginOTP() {
 
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/sent-otp", {
+      const res = await API.post("/api/auth/sent-otp", {
         email,
       });
       alert(res.data.message || "OTP sent successfully!");
@@ -37,19 +37,16 @@ function LoginOTP() {
 
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/verify-otp", {
+      const res = await API.post("/api/auth/verify-otp", {
         email,
         otp,
       });
 
-      
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
       }
 
       alert(res.data.message || "OTP verification successful!");
-      
-      
       navigate("/profile");
     } catch (error) {
       alert(error.response?.data?.message || "Verifying OTP failed");
@@ -61,7 +58,7 @@ function LoginOTP() {
   return (
     <div>
       <h2>Login with OTP</h2>
-      
+
       {/* Email Section */}
       <input
         type="email"
@@ -69,9 +66,9 @@ function LoginOTP() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
-      <button 
-        type="button" 
-        onClick={handleSentotp} 
+      <button
+        type="button"
+        onClick={handleSentotp}
         disabled={loading}
       >
         {loading ? "Sending..." : "Send OTP"}
@@ -85,13 +82,13 @@ function LoginOTP() {
         value={otp}
         onChange={(e) => setOtp(e.target.value)}
       />
-      <button 
-        type="button" 
-        onClick={handleVerifyotp} 
-        disabled={loading}
-      >
-        {loading ? "Verifying..." : "Verify OTP"}
-      </button>
+     <button
+  type="button"
+  onClick={handleVerifyotp}
+  disabled={loading || otp.length !== 6}
+>
+  {loading ? "Verifying..." : "Verify OTP"}
+</button>
     </div>
   );
 }
