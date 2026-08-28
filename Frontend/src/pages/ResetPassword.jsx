@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import API from '../services/api';
+import { FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', message: '' });
 
@@ -52,7 +54,7 @@ export default function ResetPassword() {
   return (
     <div className="container">
       <div className="card">
-        <h1>Reset Password</h1>
+        <h1>New Password</h1>
         <p className="auth-subtitle">
           Enter your new password below to update your account credentials.
         </p>
@@ -63,24 +65,44 @@ export default function ResetPassword() {
           </div>
         )}
 
-        <form onSubmit={handleResetPassword}>
-          <label className="input-label">New Password</label>
-          <input
-            type="password"
-            placeholder="Enter new password"
-            value={password}
-            required
-            onChange={(e) => setPassword(e.target.value)}
-          />
+        <form onSubmit={handleResetPassword} className="auth-form">
+          <div className="input-field-group">
+            <label className="input-label">New Password</label>
+            <div className="input-wrapper">
+              <FaLock className="field-icon" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter new password (min 6 chars)"
+                value={password}
+                required
+                minLength={6}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="toggle-password-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </div>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Resetting..." : "Reset Password"}
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? (
+              <span className="btn-spinner-container">
+                <span className="spinner"></span> Resetting...
+              </span>
+            ) : (
+              "Update Password"
+            )}
           </button>
         </form>
 
         <div className="auth-footer">
-          <Link to="/" className="forgot">
-            ← Back to Login
+          <Link to="/" className="forgot" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <FaArrowLeft style={{ fontSize: '11px' }} /> Back to Sign In
           </Link>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { FaEnvelope, FaKey } from "react-icons/fa";
 
 function LoginOTP({ email: propEmail = "", setEmail: propSetEmail } = {}) {
   const [email, setEmailState] = useState(propEmail);
@@ -17,26 +18,25 @@ function LoginOTP({ email: propEmail = "", setEmail: propSetEmail } = {}) {
     if (otpSent) setOtpSent(false);
   };
 
-  // Send OTP
   const handleSentotp = async (e) => {
     e.preventDefault();
     setMessage({ text: "", type: "" });
 
     if (!email) {
-      return setMessage({ text: "Please enter your email", type: "error" });
+      return setMessage({ text: "Please enter your email address.", type: "error" });
     }
 
     setSendingOtp(true);
     try {
       const res = await API.post("/api/auth/sent-otp", { email: email.trim().toLowerCase() });
       setMessage({
-        text: res.data.message || "OTP sent successfully to your email!",
+        text: res.data.message || "OTP code sent to your email!",
         type: "success",
       });
       setOtpSent(true);
     } catch (error) {
       setMessage({
-        text: error.response?.data?.message || "Failed to send OTP",
+        text: error.response?.data?.message || "Failed to send OTP email.",
         type: "error",
       });
     } finally {
@@ -44,18 +44,20 @@ function LoginOTP({ email: propEmail = "", setEmail: propSetEmail } = {}) {
     }
   };
 
-  // Verify OTP
   const handleVerifyotp = async (e) => {
     e.preventDefault();
     setMessage({ text: "", type: "" });
 
     if (!email || !otp) {
-      return setMessage({ text: "Please enter both email and OTP", type: "error" });
+      return setMessage({ text: "Please enter both email and 6-digit OTP code.", type: "error" });
     }
 
     setVerifyingOtp(true);
     try {
-      const res = await API.post("/api/auth/verify-otp", { email: email.trim().toLowerCase(), otp: otp.trim() });
+      const res = await API.post("/api/auth/verify-otp", {
+        email: email.trim().toLowerCase(),
+        otp: otp.trim(),
+      });
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
@@ -64,7 +66,7 @@ function LoginOTP({ email: propEmail = "", setEmail: propSetEmail } = {}) {
       navigate("/profile", { replace: true });
     } catch (error) {
       setMessage({
-        text: error.response?.data?.message || "Verifying OTP failed",
+        text: error.response?.data?.message || "OTP verification failed.",
         type: "error",
       });
     } finally {
@@ -73,74 +75,65 @@ function LoginOTP({ email: propEmail = "", setEmail: propSetEmail } = {}) {
   };
 
   return (
-    <div className="auth-card">
-      <h2 className="auth-title">Verify & Sign In</h2>
-      <p className="auth-subtitle">Enter the OTP sent to your email.</p>
-
+    <div className="otp-container">
       {message.text && (
-        <div
-          style={{
-            padding: "10px",
-            marginBottom: "16px",
-            borderRadius: "6px",
-            fontSize: "14px",
-            textAlign: "center",
-            backgroundColor: message.type === "error" ? "#ef444422" : "#22c55e22",
-            color: message.type === "error" ? "#f87171" : "#4ade80",
-            border: `1px solid ${message.type === "error" ? "#ef4444" : "#22c55e"}`,
-          }}
-        >
+        <div className={`alert-badge ${message.type}`}>
           {message.text}
         </div>
       )}
 
-      {/* Email Input */}
-      <div className="input-group">
-        <input
-          type="email"
-          placeholder="Enter your registered email"
-          value={email}
-          onChange={(e) => handleEmailChange(e.target.value)}
-          disabled={sendingOtp}
-          className="auth-input"
-        />
+      <div className="input-field-group">
+        <label className="input-label">Registered Email</label>
+        <div className="input-wrapper">
+          <FaEnvelope className="field-icon" />
+          <input
+            type="email"
+            placeholder="name@example.com"
+            value={email}
+            onChange={(e) => handleEmailChange(e.target.value)}
+            disabled={sendingOtp}
+          />
+        </div>
         <button
           type="button"
           onClick={handleSentotp}
           disabled={sendingOtp || !email}
-          className="auth-btn"
-          style={{ marginTop: "8px" }}
+          className="secondary-btn"
+          style={{ marginTop: "6px" }}
         >
-          {sendingOtp ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
+          {sendingOtp ? "Sending OTP..." : otpSent ? "Resend OTP Code" : "Request OTP Code"}
         </button>
       </div>
 
-      {/* OTP Section */}
-      <div className="input-group" style={{ marginTop: "16px" }}>
-        <input
-          type="text"
-          maxLength="6"
-          placeholder="Enter 6-digit OTP"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value.trim())}
-          disabled={verifyingOtp}
-          className="auth-input"
-        />
+      <div className="input-field-group" style={{ marginTop: "18px" }}>
+        <label className="input-label">6-Digit Verification OTP Code</label>
+        <div className="input-wrapper">
+          <FaKey className="field-icon" />
+          <input
+            type="text"
+            maxLength="6"
+            placeholder="123456"
+            value={otp}
+            className="otp-input"
+            onChange={(e) => setOtp(e.target.value.trim())}
+            disabled={verifyingOtp}
+          />
+        </div>
         <button
           type="button"
           onClick={handleVerifyotp}
           disabled={verifyingOtp || otp.length !== 6}
-          className="auth-btn"
-          style={{ marginTop: "8px" }}
+          className="submit-btn"
+          style={{ marginTop: "10px" }}
         >
-          {verifyingOtp ? "Verifying..." : "Verify & Login"}
+          {verifyingOtp ? (
+            <span className="btn-spinner-container">
+              <span className="spinner"></span> Verifying...
+            </span>
+          ) : (
+            "Verify & Sign In"
+          )}
         </button>
-      </div>
-
-      <div style={{ marginTop: "16px", textAlign: "center" }}>
-        <Link to="/" style={{ color: "#818cf8", fontSize: "14px", textDecoration: "none" }}>
-          ← Back to Password Login
-        </Link>
       </div>
     </div>
   );

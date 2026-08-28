@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
+import { FaEnvelope, FaArrowLeft } from 'react-icons/fa';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -42,7 +43,7 @@ export default function ForgotPassword() {
   return (
     <div className="container">
       <div className="card">
-        <h1>Forgot Password</h1>
+        <h1>Reset Password</h1>
         <p className="auth-subtitle">
           Enter your registered email address and we'll send you a link to reset your password.
         </p>
@@ -53,25 +54,36 @@ export default function ForgotPassword() {
           </div>
         )}
 
-        <form onSubmit={handleForgotPassword}>
-          <label className="input-label">Email Address</label>
-          <input
-            type="email"
-            placeholder="name@example.com"
-            value={email}
-            required
-            autoComplete="email"
-            onChange={(e) => setEmail(e.target.value)}
-          />
+        <form onSubmit={handleForgotPassword} className="auth-form">
+          <div className="input-field-group">
+            <label className="input-label">Email Address</label>
+            <div className="input-wrapper">
+              <FaEnvelope className="field-icon" />
+              <input
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                required
+                autoComplete="email"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+          </div>
 
-          <button type="submit" disabled={loading}>
-            {loading ? 'Sending Link...' : 'Send Reset Link'}
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? (
+              <span className="btn-spinner-container">
+                <span className="spinner"></span> Sending Link...
+              </span>
+            ) : (
+              'Send Reset Link'
+            )}
           </button>
         </form>
 
         <div className="auth-footer">
-          <Link to="/" className="forgot">
-            ← Back to Login
+          <Link to="/" className="forgot" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <FaArrowLeft style={{ fontSize: '11px' }} /> Back to Sign In
           </Link>
         </div>
       </div>
