@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 
@@ -6,28 +6,28 @@ function Dashboard() {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
-    const fetchUser = async () => {
-        const token = localStorage.getItem("token");
-        
-        // If no token exists, immediately redirect to login
-        if (!token) {
-            navigate("/");
-            return;
-        }
-
-        try {
-            const res = await API.get("/api/auth/profile");
-            setUser(res.data);
-        } catch (error) {
-            console.error("Dashboard profile fetch error:", error);
-            localStorage.removeItem("token");
-            navigate("/");
-        }
-    };
-
     useEffect(() => {
+        const fetchUser = async () => {
+            const token = localStorage.getItem("token");
+            
+            // If no token exists, immediately redirect to login
+            if (!token) {
+                navigate("/");
+                return;
+            }
+
+            try {
+                const res = await API.get("/api/auth/profile");
+                setUser(res.data);
+            } catch (error) {
+                console.error("Dashboard profile fetch error:", error);
+                localStorage.removeItem("token");
+                navigate("/");
+            }
+        };
+
         fetchUser();
-    }, []);
+    }, [navigate]);
 
     const handleLogout = () => {
         localStorage.removeItem("token");

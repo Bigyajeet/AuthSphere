@@ -13,7 +13,8 @@ export const sentOtp = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: cleanEmail });
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -75,9 +76,12 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanOtp = otp.toString().trim();
+
     const user = await User.findOne({
-      email,
-      otp,
+      email: cleanEmail,
+      otp: cleanOtp,
       otpExpire: { $gt: Date.now() },
     });
 

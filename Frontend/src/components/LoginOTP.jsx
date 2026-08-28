@@ -1,15 +1,21 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 
-function LoginOTP() {
-  const [email, setEmail] = useState("");
+function LoginOTP({ email: propEmail = "", setEmail: propSetEmail } = {}) {
+  const [email, setEmailState] = useState(propEmail);
   const [otp, setOtp] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
   const navigate = useNavigate();
+
+  const handleEmailChange = (val) => {
+    setEmailState(val);
+    if (propSetEmail) propSetEmail(val);
+    if (otpSent) setOtpSent(false);
+  };
 
   // Send OTP
   const handleSentotp = async (e) => {
@@ -22,7 +28,7 @@ function LoginOTP() {
 
     setSendingOtp(true);
     try {
-      const res = await API.post("/api/auth/sent-otp", { email });
+      const res = await API.post("/api/auth/sent-otp", { email: email.trim().toLowerCase() });
       setMessage({
         text: res.data.message || "OTP sent successfully to your email!",
         type: "success",
@@ -49,7 +55,7 @@ function LoginOTP() {
 
     setVerifyingOtp(true);
     try {
-      const res = await API.post("/api/auth/verify-otp", { email, otp });
+      const res = await API.post("/api/auth/verify-otp", { email: email.trim().toLowerCase(), otp: otp.trim() });
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
@@ -94,8 +100,8 @@ function LoginOTP() {
           type="email"
           placeholder="Enter your registered email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={sendingOtp || otpSent}
+          onChange={(e) => handleEmailChange(e.target.value)}
+          disabled={sendingOtp}
           className="auth-input"
         />
         <button

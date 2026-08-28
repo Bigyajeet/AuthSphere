@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
 
@@ -18,7 +18,7 @@ export default function ForgotPassword() {
     setLoading(true);
     try {
       const res = await API.post('/api/auth/forgot-password', {
-        email,
+        email: email.trim().toLowerCase(),
       });
 
       setStatus({

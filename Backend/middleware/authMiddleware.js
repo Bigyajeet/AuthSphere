@@ -25,9 +25,9 @@ export const protect=async(req,res,next)=>{
         next();
 
     }catch(error){
-            return res.status(404).json({
+            return res.status(401).json({
             success:false,
-            message:"User Not found",
+            message:"Not authorized to access this route",
         });
     }
 }

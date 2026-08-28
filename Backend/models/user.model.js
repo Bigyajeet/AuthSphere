@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
           githubId:{
             type:String,
         },
-            facebook:{
+        facebookId:{
             type:String,
         },
             LinkedinId:{

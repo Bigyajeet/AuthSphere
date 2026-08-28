@@ -326,7 +326,7 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user || !user.password) {
       return res.status(400).json({
         message: "Invalid Credentials",
       });
@@ -363,7 +363,8 @@ export const forgotPassword = async (req, res) => {
       return res.status(400).json({ success: false, message: "Please provide an email" });
     }
 
-    const user = await User.findOne({ email });
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: cleanEmail });
     if (!user) {
       return res.status(404).json({
         success: false,

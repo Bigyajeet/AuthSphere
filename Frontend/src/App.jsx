@@ -1,4 +1,3 @@
-import React from "react";
 import AuthPage from "./pages/AuthPage";
 import { BrowserRouter, Routes,Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
