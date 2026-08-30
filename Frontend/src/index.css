@@ -353,22 +353,29 @@ body::after {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
 }
 
 .social-google-wrapper {
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
 .social-google-wrapper > div {
   width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
 }
 
 .social-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+  width: 100%;
 }
 
 .social-btn {
@@ -376,7 +383,8 @@ body::after {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 12px;
+  height: 42px;
+  padding: 0 10px;
   border-radius: 12px;
   font-size: 13px;
   font-weight: 600;
@@ -385,6 +393,8 @@ body::after {
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   color: white;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .social-btn:hover {
@@ -393,7 +403,11 @@ body::after {
 }
 
 .social-icon-img {
-  font-size: 16px;
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 18px !important;
+  flex-shrink: 0 !important;
+  display: inline-block;
 }
 
 .social-btn.github {
@@ -639,4 +653,51 @@ body::after {
   gap: 16px;
   max-width: 380px;
   width: 100%;
+}
+
+/* Responsive Design Adjustments for Mobile Devices */
+@media (max-width: 520px) {
+  .container {
+    padding: 20px 14px;
+  }
+
+  .card {
+    padding: 30px 20px;
+    border-radius: 22px;
+  }
+
+  .social-grid {
+    gap: 8px;
+  }
+
+  .social-btn {
+    height: 40px;
+    padding: 0 6px;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .social-icon-img {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .social-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .social-btn {
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .social-icon-img {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 18px !important;
+  }
 }

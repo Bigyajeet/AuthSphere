@@ -27,9 +27,9 @@ function SocialIcon() {
           onSuccess={handleGoogleSuccess}
           onError={() => alert("Google Login Failed")}
           theme="filled_blue"
-          shape="pill"
-          size="medium"
-          width="100%"
+          shape="rectangular"
+          size="large"
+          width="350"
         />
       </div>
 
